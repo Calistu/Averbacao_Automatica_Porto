@@ -7,11 +7,19 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#define MAX_XMLS_QNT 100000
-#define PRO_DIR "ct-es" 
+#define CONF "averba.conf"
+#define CONF_QNT 3
+#define CONF_C 50
 struct dirent *listar;
 DIR *pro;
 int qnt=0;
+char *configs[] = {"xml_len=","max_xml=","pro_dir="};
+struct conf 
+{
+		int  xml_len;
+		long max_xml;
+		char pro_dir[50];
+};
 struct xml
 {
 		char chave[45];
@@ -27,10 +35,68 @@ struct xml
 };
 
 struct xml *xmls;
+struct conf config;
+
+int configurar()	
+{
+	int i;
+	char *c,*teste;
+	FILE *arquivo;
+	c = malloc(CONF_C);
+	teste = malloc(CONF_C/2);
+	
+	arquivo = fopen(CONF,"r");
+	if(arquivo == NULL)
+	{
+			printf("[!] Sem arquivo de configuracao\n");
+			return 1;
+	}
+	while((fgets(c,50,arquivo))!=NULL)
+	{
+		int  xml_len;
+		long max_xml;
+		char pro_dir[50];
+		memset(teste,0x0,strlen(teste));
+		strcpy(teste,c);
+		teste[8] = '\0';
+		if(strcmp(teste,configs[0])==0)
+		{
+			config.xml_len = atoi(c+8);
+			printf("xml_len=%i\n",config.xml_len);
+		}
+		if(strcmp(teste,configs[1])==0)
+		{
+			config.max_xml = atoi(c+8);
+			printf("max_xml=%i\n",config.max_xml);
+		}
+		if(strcmp(teste,configs[2])==0)
+		{
+			strcpy(config.pro_dir,c+8);
+			config.pro_dir[strlen(config.pro_dir)-1] = '\0';
+			printf("pro_dir=%s\n",config.pro_dir);
+		}	
+	}
+	if(config.xml_len==0)
+	{
+		printf("falta parametro xml_len\n");
+		return 1;
+	}
+	if(config.max_xml==0)
+	{
+		printf("falta parametro max_xml\n");
+		return 1;
+	}
+	if(config.pro_dir==NULL)
+	{
+		printf("falta parametro tag pro_dir\n");
+		return 1;
+	}
+	return 0;
+}
 
 int estruturar()
 {
-	pro = opendir(PRO_DIR);
+	pro = opendir(config.pro_dir);
 	if(pro==NULL)
 	{
 			printf("[!]diretorio não encontrado!\n");
@@ -39,7 +105,7 @@ int estruturar()
 	//inserindo as chaves de xml em uma estrutura
 	while((listar = readdir(pro)))
 	{
-		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)==56)
+		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)==config.xml_len)
 		{
 			strcpy(xmls[qnt].chave,(listar->d_name));
 			xmls[qnt].chave[44] = '\0';
@@ -69,7 +135,7 @@ int estruturar()
 			
 			xmls[qnt].dv = xmls[qnt].chave[43];
 			
-			if(qnt==MAX_XMLS_QNT)
+			if(qnt==config.max_xml)
 			{
 					printf("[!] Limite de pesquisa por ctes\n");
 					return 1;
@@ -85,7 +151,9 @@ int main()
 {
 	int cont,saida=0,err=0;
 	setlocale(LC_ALL,"Portuguese");
-	xmls = malloc(sizeof(xmls)*MAX_XMLS_QNT);
+	if(configurar())
+		return 1;
+	xmls = malloc(sizeof(xmls)*config.max_xml);
 	if(estruturar())
 		return 1;
 	char *chave = malloc(44);
@@ -103,7 +171,7 @@ int main()
 		seekdir(pro,0);
 		while((listar = readdir(pro)))		
 		{
-			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0)
+			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)==config.xml_len)
 			{
 				strcpy(chave,listar->d_name);
 				chave[44] = '\0';
@@ -136,9 +204,9 @@ int main()
 					#ifdef WIN32
 					Sleep(1000);
 					#endif			
-					sprintf(command,"%s/%s",PRO_DIR,listar->d_name);
+					sprintf(command,"%s/%s",config.pro_dir,listar->d_name);
 					command[70] = '\0';
-					err = execl("php","login.php",PRO_DIR);
+					err = execl("php","login.php",config.pro_dir);
 					if(err!=0)
 					{
 							printf("\n[!] algum erro ocorreu\n");
