@@ -1,5 +1,6 @@
 <h1 align="center">Como Utilizar</h1>
-Complete arquivo de configuracao:<br>
+Crie o arquivo de configuracao:<br>
+averba.conf<br>
 <strong>xml_len=</strong><br><br>
 tamanho max do nome dos arquivos xml<br>
 <strong>pro_dir=</strong><br><br>

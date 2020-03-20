@@ -65,8 +65,8 @@ function sendFile($sFileContent, $aUser, $sRecipient = ''){
 
 $aUser = array(
 		'comp' => 5,
-        'user' => '11111111111111',
-        'pass' => '1111', 
+        'user' => $argv[2],
+        'pass' => $argv[3], 
         'path' => ''
 );
 $sFileContent = file_get_contents($argv[1]);

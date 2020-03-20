@@ -8,17 +8,20 @@
 #include <windows.h>
 #endif
 #define CONF "averba.conf"
-#define CONF_QNT 3
+#define CONF_QNT 5
 #define CONF_C 50
+FILE *logger;
 struct dirent *listar;
 DIR *pro;
 int qnt=0;
-char *configs[] = {"xml_len=","max_xml=","pro_dir="};
+char *configs[] = {"xml_len=","max_xml=","pro_dir=","cnpj_lg=","senh_lg="};
 struct conf 
 {
 		int  xml_len;
 		long max_xml;
-		char pro_dir[50];
+		char pro_dir[100];
+		char cnpj_lg[50];
+		char senh_lg[50];
 };
 struct xml
 {
@@ -39,7 +42,6 @@ struct conf config;
 
 int configurar()	
 {
-	int i;
 	char *c,*teste;
 	FILE *arquivo;
 	c = malloc(CONF_C);
@@ -51,11 +53,11 @@ int configurar()
 			printf("[!] Sem arquivo de configuracao\n");
 			return 1;
 	}
+	config.max_xml = 0;
+	config.xml_len = 0;
+	
 	while((fgets(c,50,arquivo))!=NULL)
 	{
-		int  xml_len;
-		long max_xml;
-		char pro_dir[50];
 		memset(teste,0x0,strlen(teste));
 		strcpy(teste,c);
 		teste[8] = '\0';
@@ -67,14 +69,29 @@ int configurar()
 		if(strcmp(teste,configs[1])==0)
 		{
 			config.max_xml = atoi(c+8);
-			printf("max_xml=%i\n",config.max_xml);
+			printf("max_xml=%li\n",config.max_xml);
 		}
 		if(strcmp(teste,configs[2])==0)
 		{
 			strcpy(config.pro_dir,c+8);
-			config.pro_dir[strlen(config.pro_dir)-1] = '\0';
+			if(config.pro_dir[strlen(config.pro_dir)-1] == '\n'||config.pro_dir[strlen(config.pro_dir)-1] == '\r')
+				config.pro_dir[strlen(config.pro_dir)-1] = '\0';
 			printf("pro_dir=%s\n",config.pro_dir);
-		}	
+		}
+		if(strcmp(teste,configs[3])==0)
+		{
+			strcpy(config.cnpj_lg,c+8);
+			if(config.cnpj_lg[strlen(config.cnpj_lg)-1] == '\n')
+				config.cnpj_lg[strlen(config.cnpj_lg)-1] = '\0';
+			printf("cnpj_lg=%s\n",config.cnpj_lg);
+		}		
+		if(strcmp(teste,configs[4])==0)
+		{
+			strcpy(config.senh_lg,c+8);
+			if(config.senh_lg[strlen(config.senh_lg)-1] == '\n')
+				config.senh_lg[strlen(config.senh_lg)-1] = '\0';
+			printf("senh_lg=%s\n",config.senh_lg);
+		}
 	}
 	if(config.xml_len==0)
 	{
@@ -86,9 +103,19 @@ int configurar()
 		printf("falta parametro max_xml\n");
 		return 1;
 	}
-	if(config.pro_dir==NULL)
+	if(strlen(config.pro_dir)==0)
 	{
 		printf("falta parametro tag pro_dir\n");
+		return 1;
+	}
+	if(strlen(config.cnpj_lg)==0)
+	{
+		printf("falta parametro tag cnpj_lg\n");
+		return 1;
+	}
+	if(strlen(config.senh_lg)==0)
+	{
+		printf("falta parametro tag senh_lg\n");
 		return 1;
 	}
 	return 0;
@@ -96,16 +123,19 @@ int configurar()
 
 int estruturar()
 {
+	qnt=0;
 	pro = opendir(config.pro_dir);
 	if(pro==NULL)
 	{
+	
 			printf("[!]diretorio não encontrado!\n");
 			return 1;
 	}
+	printf("Estruturando...\n");
 	//inserindo as chaves de xml em uma estrutura
 	while((listar = readdir(pro)))
 	{
-		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)<=config.xml_len)
+		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&((strlen(listar->d_name))<=config.xml_len))
 		{
 			strcpy(xmls[qnt].chave,(listar->d_name));
 			xmls[qnt].chave[44] = '\0';
@@ -137,13 +167,15 @@ int estruturar()
 			
 			if(qnt==config.max_xml)
 			{
-					printf("[!] Limite de pesquisa por ctes\n");
-					return 1;
+				printf("[!] Limite de pesquisa por ctes\n");
+				qnt--;
+				return 1;
 			}
 			qnt++;
 		}
 	}
 	qnt--;
+	
 	return 0;
 }
 
@@ -153,11 +185,11 @@ int main()
 	setlocale(LC_ALL,"Portuguese");
 	if(configurar())
 		return 1;
-	xmls = malloc(sizeof(xmls)*config.max_xml);
+	xmls = malloc(sizeof(struct xml)*config.max_xml);
 	if(estruturar())
 		return 1;
 	char *chave = malloc(44);
-	char *command = malloc(75);
+	char *command = malloc(2000);
 	while(1)
 	{
 		#ifdef __linux__
@@ -173,6 +205,8 @@ int main()
 		{
 			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)<=config.xml_len)
 			{
+				//printf("%s\n",listar->d_name);
+				
 				strcpy(chave,listar->d_name);
 				chave[44] = '\0';
 				for(cont=0;cont<=qnt;cont++)
@@ -198,15 +232,16 @@ int main()
 					printf("Codigo:  %s\n",xmls[qnt].codigo);
 					printf("Digito:  %c\n",xmls[qnt].dv);
 					printf("\n=================================================================\n");	
-					#ifdef __linux__
-					sleep(1);
-					#endif
-					#ifdef WIN32
-					Sleep(1000);
-					#endif			
-					sprintf(command,"%s/%s",config.pro_dir,listar->d_name);
-					command[70] = '\0';
-					err = execl("php","login.php",config.pro_dir);
+
+					sprintf(command,"php login.php %s/%s %s %s",config.pro_dir,listar->d_name,config.cnpj_lg,config.senh_lg);
+					command[200] = '\0';
+					logger = fopen("logs.txt","a+");
+					if(logger!=NULL)
+					{
+						fprintf(logger,"%s\n",command);
+						fclose(logger);
+					}
+					err = system(command);
 					if(err!=0)
 					{
 							printf("\n[!] algum erro ocorreu\n");
@@ -223,7 +258,7 @@ int main()
 				{
 					saida=0;
 				}
-				
+
 			}
 		}
 	}
