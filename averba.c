@@ -105,7 +105,7 @@ int estruturar()
 	//inserindo as chaves de xml em uma estrutura
 	while((listar = readdir(pro)))
 	{
-		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)==config.xml_len)
+		if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)<=config.xml_len)
 		{
 			strcpy(xmls[qnt].chave,(listar->d_name));
 			xmls[qnt].chave[44] = '\0';
@@ -171,7 +171,7 @@ int main()
 		seekdir(pro,0);
 		while((listar = readdir(pro)))		
 		{
-			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)==config.xml_len)
+			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)<=config.xml_len)
 			{
 				strcpy(chave,listar->d_name);
 				chave[44] = '\0';
