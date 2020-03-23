@@ -164,7 +164,19 @@ int estruturar()
 			xmls[qnt].codigo[8] = '\0';
 			
 			xmls[qnt].dv = xmls[qnt].chave[43];
-			
+			printf("\n=================================================================\n");
+			printf("Chave:   %s\n",xmls[qnt].chave);
+			printf("UF:      %s\n",xmls[qnt].uf);
+			printf("AnoMes:  %s\n",xmls[qnt].ano_mes);
+			printf("CNPJ:    %s\n",xmls[qnt].cnpj);
+			printf("Modelo:  %s\n",xmls[qnt].modelo);
+			printf("Serie:   %s\n",xmls[qnt].serie);
+			printf("CT-e:    %s\n",xmls[qnt].cte);
+			printf("Forma    %c\n",xmls[qnt].forma);
+			printf("Codigo:  %s\n",xmls[qnt].codigo);
+			printf("Digito:  %c\n",xmls[qnt].dv);
+			printf("\n=================================================================\n");	
+
 			if(qnt==config.max_xml)
 			{
 				printf("[!] Limite de pesquisa por ctes\n");
@@ -220,19 +232,6 @@ int main()
 				if(saida==0)
 				{
 					printf("Xml novo encontrado: %s\n",chave);
-					printf("\n=================================================================\n");
-					printf("Chave:   %s\n",xmls[qnt].chave);
-					printf("UF:      %s\n",xmls[qnt].uf);
-					printf("AnoMes:  %s\n",xmls[qnt].ano_mes);
-					printf("CNPJ:    %s\n",xmls[qnt].cnpj);
-					printf("Modelo:  %s\n",xmls[qnt].modelo);
-					printf("Serie:   %s\n",xmls[qnt].serie);
-					printf("CT-e:    %s\n",xmls[qnt].cte);
-					printf("Forma    %c\n",xmls[qnt].forma);
-					printf("Codigo:  %s\n",xmls[qnt].codigo);
-					printf("Digito:  %c\n",xmls[qnt].dv);
-					printf("\n=================================================================\n");	
-
 					sprintf(command,"php login.php %s/%s %s %s",config.pro_dir,listar->d_name,config.cnpj_lg,config.senh_lg);
 					command[200] = '\0';
 					logger = fopen("logs.txt","a+");
