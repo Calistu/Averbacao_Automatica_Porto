@@ -19,4 +19,11 @@ senha para login<br><br>
 <strong>senh_lg=string</strong><br>
 
 
+João Calisto – jovictor210@gmail.com
 
+## Contribuindo
+1. Fork (<https://github.com/stdmedoth/Averbacao_Automatica_Porto/fork>)
+2. Crie seu branch (`git checkout -b feature/algo`)
+3. Comite as alterações (`git commit -am 'Adicionando algo'`)
+4. Suba como branch (`git push origin feature/algo`)
+5. Crie um pull request

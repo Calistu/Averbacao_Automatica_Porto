@@ -1,4 +1,8 @@
 <?php
+/*
+	Author: João calisto
+	Description: Functions to create the login on WebService and sends the xml
+*/
 require_once('func.php');
 
 // Exemplo Config $ws
@@ -26,15 +30,15 @@ function sendFile($sFileContent, $aUser, $sRecipient = ''){
 	rewind($file);
 	$meta = stream_get_meta_data($file);
 	$mime = mime_content_type($meta['uri']);
-	
+
 	$post = array(
 	'file' => (version_compare(PHP_VERSION, '5.5') >= 0)? new CURLFile($meta['uri'], $mime) : '@'.$meta['uri'].';type='.$mime
 	);
-	
+
 	if ($sRecipient) {
 		$post['recipient'] = $sRecipient;
 	}
-	
+
 	// Login
 	if ($ws['logged'] != $aUser['user']) {
 		$res = json_decode(websysRequest($aUser), true);
@@ -46,7 +50,7 @@ function sendFile($sFileContent, $aUser, $sRecipient = ''){
 		$res['success'] = $res['C'] = true;
 		echo "login feito\n";
 	}
-	
+
 	// Upload
 	if ($res['success'] && isset($res['C'])) {
 		$ws['logged'] = $aUser['user'];
@@ -57,7 +61,7 @@ function sendFile($sFileContent, $aUser, $sRecipient = ''){
 	{
 		echo "erro no upload\n";
 	}
-	
+
 	fclose($file);
 	return $res;
 }
@@ -66,7 +70,7 @@ function sendFile($sFileContent, $aUser, $sRecipient = ''){
 $aUser = array(
 		'comp' => 5,
         'user' => $argv[2],
-        'pass' => $argv[3], 
+        'pass' => $argv[3],
         'path' => ''
 );
 $sFileContent = file_get_contents($argv[1]);
@@ -75,7 +79,3 @@ $res = sendFile($sFileContent, $aUser);
 
 print_r($res);
 ?>
-
-
-
-

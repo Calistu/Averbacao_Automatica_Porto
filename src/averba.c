@@ -1,3 +1,7 @@
+/*
+	Author: João calisto
+	Description: Read directories in loop, to find a new xml occurrence, when it finds, send the xml to web service
+*/
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
@@ -15,7 +19,7 @@ struct dirent *listar;
 DIR *pro;
 int qnt=0;
 char *configs[] = {"xml_len=","max_xml=","pro_dir=","cnpj_lg=","senh_lg="};
-struct conf 
+struct conf
 {
 		int  xml_len;
 		long max_xml;
@@ -26,7 +30,7 @@ struct conf
 struct xml
 {
 		char chave[45];
-		char uf[3]; 
+		char uf[3];
 		char ano_mes[5];
 		char cnpj[15];
 		char modelo[3];
@@ -40,13 +44,13 @@ struct xml
 struct xml *xmls;
 struct conf config;
 
-int configurar()	
+int configurar()
 {
 	char *c,*teste;
 	FILE *arquivo;
 	c = malloc(CONF_C);
 	teste = malloc(CONF_C/2);
-	
+
 	arquivo = fopen(CONF,"r");
 	if(arquivo == NULL)
 	{
@@ -55,7 +59,7 @@ int configurar()
 	}
 	config.max_xml = 0;
 	config.xml_len = 0;
-	
+
 	while((fgets(c,50,arquivo))!=NULL)
 	{
 		memset(teste,0x0,strlen(teste));
@@ -84,7 +88,7 @@ int configurar()
 			if(config.cnpj_lg[strlen(config.cnpj_lg)-1] == '\n')
 				config.cnpj_lg[strlen(config.cnpj_lg)-1] = '\0';
 			printf("cnpj_lg=%s\n",config.cnpj_lg);
-		}		
+		}
 		if(strcmp(teste,configs[4])==0)
 		{
 			strcpy(config.senh_lg,c+8);
@@ -127,7 +131,7 @@ int estruturar()
 	pro = opendir(config.pro_dir);
 	if(pro==NULL)
 	{
-	
+
 			printf("[!]diretorio não encontrado!\n");
 			return 1;
 	}
@@ -139,30 +143,30 @@ int estruturar()
 		{
 			strcpy(xmls[qnt].chave,(listar->d_name));
 			xmls[qnt].chave[44] = '\0';
-			
+
 			strcpy(xmls[qnt].uf, xmls[qnt].chave);
 			xmls[qnt].uf[2] = '\0';
-			
+
 			strcpy(xmls[qnt].ano_mes, xmls[qnt].chave+2);
 			xmls[qnt].ano_mes[4] = '\0';
-			
+
 			strcpy(xmls[qnt].cnpj, xmls[qnt].chave+6);
 			xmls[qnt].cnpj[14] = '\0';
-			
+
 			strcpy(xmls[qnt].modelo, xmls[qnt].chave+20);
 			xmls[qnt].modelo[2] = '\0';
-			
+
 			strcpy(xmls[qnt].serie, xmls[qnt].chave+22);
 			xmls[qnt].serie[3] = '\0';
-			
+
 			strcpy(xmls[qnt].cte, xmls[qnt].chave+25);
 			xmls[qnt].cte[9] = '\0';
-			
+
 			xmls[qnt].forma = xmls[qnt].chave[34];
-			
+
 			strcpy(xmls[qnt].codigo, xmls[qnt].chave+35);
 			xmls[qnt].codigo[8] = '\0';
-			
+
 			xmls[qnt].dv = xmls[qnt].chave[43];
 			printf("\n=================================================================\n");
 			printf("Chave:   %s\n",xmls[qnt].chave);
@@ -175,7 +179,7 @@ int estruturar()
 			printf("Forma    %c\n",xmls[qnt].forma);
 			printf("Codigo:  %s\n",xmls[qnt].codigo);
 			printf("Digito:  %c\n",xmls[qnt].dv);
-			printf("\n=================================================================\n");	
+			printf("\n=================================================================\n");
 
 			if(qnt==config.max_xml)
 			{
@@ -187,7 +191,7 @@ int estruturar()
 		}
 	}
 	qnt--;
-	
+
 	return 0;
 }
 
@@ -210,15 +214,15 @@ int main()
 		#ifdef WIN32
 		Sleep(1000);
 		#endif
-		
+
 		printf("Verificando...\n");
 		seekdir(pro,0);
-		while((listar = readdir(pro)))		
+		while((listar = readdir(pro)))
 		{
 			if(strcmp(listar->d_name,"..")!=0&&strcmp(listar->d_name,".")!=0&&strlen(listar->d_name)<=config.xml_len)
 			{
 				//printf("%s\n",listar->d_name);
-				
+
 				strcpy(chave,listar->d_name);
 				chave[44] = '\0';
 				for(cont=0;cont<=qnt;cont++)
@@ -262,13 +266,3 @@ int main()
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
